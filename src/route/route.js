@@ -26,16 +26,13 @@ router.post("/blog", auth.authentication, blogController.createBlog)
 //get blog api with middleware
 router.get("/getblog", auth.authentication, blogController.getblog)
 
-//filter blog api with middleware
-router.get("/filterblog", auth.authentication, blogController.filterblog)
+
 
 //update blog api with middleware
 router.put("/updateblog/:blogId", auth.authentication, auth.authorize, blogController.updatedModel)
 router.put("/updateblog",  blogController.Endpoint)
 
-//publish blog api with middleware
-router.put("/publishblog/:blogId", auth.authentication, auth.authorize, blogController.publisheblog)
-router.put("/publishblog",  blogController.Endpoint)
+
 
 //delete blog api with middleware
 router.delete("/deleteblog/:blogId", auth.authentication, auth.authorize, blogController.deleteblog)

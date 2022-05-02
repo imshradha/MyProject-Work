@@ -76,6 +76,80 @@ const createBlog = async function (req, res) {
 //get all published blogs which are not deleted
 const getblog = async function (req, res) {
   try {
+
+    //Reading input from req.query 
+    const query = req.query;
+    console.log(query)
+    if (Object.keys(query) != 0) {
+
+      const cat = query.category;
+      const subcat = query.subcategory;
+      const tag = query.tags;
+      const id = query.authorId;
+
+      //filter by authorId
+      if (id) {
+        //validate authorId
+        let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
+        if (validid) {
+          return res.send({ status: false, msg: "enter valid authorId" })
+        }
+
+        const validauthor = await authorModel.findById({ _id: id }).select({ _id: 1 });
+        if (!validauthor)
+          return res
+            .status(400)
+            .send({ status: false, msg: "Author does not exist" });
+      }
+
+      //filter by category
+      if (cat) {
+        const validcat = await blogModel.find({ category: cat });
+        console.log(validcat)
+        if (validcat.length == 0) {
+          return res
+            .status(400)
+            .send({ status: false, msg: "category does not exist " });
+        }
+      }
+
+      //filter by tag
+      if (tag) {
+        const validtag = await blogModel.find({ tags: tag });
+        console.log(validtag)
+        if (validtag.length == 0) {
+          return res
+            .status(400)
+            .send({ status: false, msg: "tag does not exist " });
+        }
+      }
+
+      //filter by subcategory
+      if (subcat) {
+        const validsubcategory = await blogModel.find({ subcategory: subcat });
+        if (validsubcategory.length == 0) {
+          return res
+            .status(400)
+            .send({ status: false, msg: "subcategory does not exist " });
+        }
+      }
+
+      //Assigning values to multiple variables
+      const { authorId, category, tags, subcategory } = query;
+      console.log(query)
+      //filter blog and populate author
+      const blog = await blogModel.find(query).populate('authorId');
+
+      //if no blog found
+      if (blog.length === 0) {
+        return res.status(404).send({ status: false, msg: "NOT found" });
+      }
+
+      //if blog found then respond with blog
+      return res.status(200).send({ status: true, data: blog });
+
+    }
+
     const blog = await blogModel.find({ $and: [{ isDeleted: false }, { isPublished: true }], }).populate('authorId');
 
     //If no blog found
@@ -84,84 +158,6 @@ const getblog = async function (req, res) {
     }
 
     //if blog found
-    res.status(200).send({ status: true, data: blog });
-
-  } catch (error) {
-    res.status(500).send({ status: false, msg: error.message });
-  }
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////
-
-//filter blog using query params
-const filterblog = async function (req, res) {
-
-  try {
-    //Reading input from req.query 
-    const query = req.query;
-    const cat = query.category;
-    const subcat = query.subcategory;
-    const tag = query.tags;
-    const id = query.authorId;
-
-    //filter by authorId
-    if (id) {
-      //validate authorId
-      let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
-      if (validid) {
-        return res.send({ status: false, msg: "enter valid authorId" })
-      }
-      
-      const validauthor = await authorModel.findById({ _id: id }).select({ _id: 1 });
-      if (!validauthor)
-        return res
-          .status(400)
-          .send({ status: false, msg: "Author does not exist" });
-    }
-
-    //filter by category
-    if (cat) {
-      const validcat = await blogModel.find({ category: cat });
-      console.log(validcat)
-      if (validcat.length == 0) {
-        return res
-          .status(400)
-          .send({ status: false, msg: "category does not exist " });
-      }
-    }
-
-    //filter by tag
-    if (tag) {
-      const validtag = await blogModel.find({ tags: tag });
-      console.log(validtag)
-      if (validtag.length == 0) {
-        return res
-          .status(400)
-          .send({ status: false, msg: "tag does not exist " });
-      }
-    }
-
-    //filter by subcategory
-    if (subcat) {
-      const validsubcategory = await blogModel.find({ subcategory: subcat });
-      if (validsubcategory.length == 0) {
-        return res
-          .status(400)
-          .send({ status: false, msg: "subcategory does not exist " });
-      }
-    }
-
-    //Assigning values to multiple variables
-    const { authorId, category, tags, subcategory } = query;
-    //filter blog and populate author
-    const blog = await blogModel.find(query).populate('authorId');
-
-    //if no blog found
-    if (blog.length === 0) {
-      return res.status(404).send({ status: false, msg: "NOT found" });
-    }
-
-    //if blog found then respond with blog
     res.status(200).send({ status: true, data: blog });
 
   } catch (error) {
@@ -188,6 +184,22 @@ const updatedModel = async function (req, res) {
     //if no blog found
     if (!blog) {
       return res.send({ status: false, msg: "blog doesnt exist" })
+    }
+
+    //if already published
+    if (req.body.isPublished) {
+      if (blog.isPublished == true) {
+        return res.status(404).send({ status: false, msg: "blog  already published" })
+      }
+
+      //Adding current time when blog published
+      blog.publishedAt = new Date(Date.now())
+      blog.isPublished = req.body.isPublished
+      //save changes
+      // blog.save()
+
+    } else {
+      return res.status(404).send({ status: false, msg: "blog  already published" })
     }
 
     //Updating title
@@ -222,37 +234,6 @@ const updatedModel = async function (req, res) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
-//Publish blog which are not deleted
-const publisheblog = async function (req, res) {
-  try {
-
-    let id = req.params.blogId
-
-    //find blog with above id
-    let blog = await blogModel.findOne({ $and: [{ _id: id }, { isDeleted: false }] })
-
-    //if no blog found
-    if (!blog) {
-      return res.send({ status: false, msg: "blog doesnt exist" })
-    }
-
-    //if already published
-    if (blog.isPublished == true) {
-      return res.status(404).send({ status: false, msg: "blog  already published" })
-    }
-
-    //Adding current time when blog published
-    blog.publishedAt = new Date(Date.now())
-    blog.isPublished = true
-    //save changes
-    blog.save()
-    res.status(200).send({ status: true, data: blog })
-
-  } catch (error) {
-    res.status(500).send({ status: false, msg: error.message })
-  }
-
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -355,9 +336,7 @@ const Endpoint = function (req, res) {
 //Exported all function
 module.exports.createBlog = createBlog;
 module.exports.getblog = getblog;
-module.exports.filterblog = filterblog;
 module.exports.updatedModel = updatedModel
-module.exports.publisheblog = publisheblog
 module.exports.deleteblog = deleteblog
 module.exports.deletebyquery = deletebyquery
 module.exports.Endpoint = Endpoint

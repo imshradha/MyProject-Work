@@ -100,7 +100,7 @@ const authorize = async function (req, res, next) {
 
             const blogs = await blogModel.find(queryparam);
             if(!blogs){
-                return res.send({ status: false, msg: "Author not allowed" })
+                return res.send({ status: false, msg: "Blog does not exist" })
             }
             isValid = blogs.some(blog => blog.authorId == loggedAuthorId)//true or false
         }
