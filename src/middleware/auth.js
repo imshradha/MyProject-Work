@@ -11,7 +11,7 @@ const authentication = async function (req, res, next) {
 
         //if token not found
         if (!token) {
-            return res.status(404).send({ status: false, msg: "Token must be present" })
+            return res.status(401).send({ status: false, msg: "Token must be present" })
         }
 
         //Token validation
@@ -26,14 +26,14 @@ const authentication = async function (req, res, next) {
         let decode = jwt.verify(token, "group40-phase2");
         //if token is not valid
         if (!decode) {
-            return res.status(403).send({ status: false, msg: "Invalid Token" })
+            return res.status(400).send({ status: false, msg: "Invalid Token" })
         }
 
         
         next()
 
     } catch (error) {
-        res.status(400).send({ status: false, msg: error.message });
+        res.status(500).send({ status: false, msg: error.message });
 
     }
 }
@@ -47,7 +47,7 @@ const authorize = async function (req, res, next) {
 
         //If token not found
         if (!token) {
-            return res.status(404).send({ status: false, msg: "Token must be present" })
+            return res.status(401).send({ status: false, msg: "Token must be present" })
         }
         //if token found then decode token using secret key
         let decode = jwt.verify(token, "group40-phase2");

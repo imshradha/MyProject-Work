@@ -45,7 +45,7 @@ const createBlog = async function (req, res) {
     const id = await authorModel.findById(auth);
     if (!id) {
       return res
-        .status(400)
+        .status(404)
         .send({ status: false, msg: "Author does not exist" });
     }
 
@@ -92,14 +92,15 @@ const getblog = async function (req, res) {
         //validate authorId
         let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
         if (validid) {
-          return res.send({ status: false, msg: "enter valid authorId" })
+          return res.status(400).send({ status: false, msg: "enter valid authorId" })
         }
 
         const validauthor = await authorModel.findById({ _id: id }).select({ _id: 1 });
-        if (!validauthor)
+        if (!validauthor) {
           return res
-            .status(400)
+            .status(404)
             .send({ status: false, msg: "Author does not exist" });
+        }
       }
 
       //filter by category
@@ -108,7 +109,7 @@ const getblog = async function (req, res) {
         console.log(validcat)
         if (validcat.length == 0) {
           return res
-            .status(400)
+            .status(404)
             .send({ status: false, msg: "category does not exist " });
         }
       }
@@ -119,7 +120,7 @@ const getblog = async function (req, res) {
         console.log(validtag)
         if (validtag.length == 0) {
           return res
-            .status(400)
+            .status(404)
             .send({ status: false, msg: "tag does not exist " });
         }
       }
@@ -129,7 +130,7 @@ const getblog = async function (req, res) {
         const validsubcategory = await blogModel.find({ subcategory: subcat });
         if (validsubcategory.length == 0) {
           return res
-            .status(400)
+            .status(404)
             .send({ status: false, msg: "subcategory does not exist " });
         }
       }
@@ -150,6 +151,7 @@ const getblog = async function (req, res) {
 
     }
 
+    //get blogs not deleted and published
     const blog = await blogModel.find({ $and: [{ isDeleted: false }, { isPublished: true }], }).populate('authorId');
 
     //If no blog found
@@ -191,7 +193,7 @@ const updatedModel = async function (req, res) {
       //Adding current time when blog published
       blog.publishedAt = new Date(Date.now())
       blog.isPublished = req.body.isPublished
-    }else if(req.body.isPublished === false){
+    } else if (req.body.isPublished === false) {
       blog.isPublished = false
     }
 
