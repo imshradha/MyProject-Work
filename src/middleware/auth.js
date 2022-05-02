@@ -70,13 +70,13 @@ const authorize = async function (req, res, next) {
             //validate blogId
             let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
             if (validid) {
-                return res.status(400).send({ status: false, message: "enter valid blogId" })
+                return res.status(400).send({ status: false, msg: "enter valid blogId" })
             }
 
             let auth = await blogModel.findById({ _id: id })
            
             if (!auth) {
-                return res.status(404).send({ status: false, message: "blog doesnt exist" })
+                return res.status(404).send({ status: false, msg: "blog doesnt exist" })
             }
 
             isValid = loggedAuthorId == auth.authorId;//true or false
@@ -94,7 +94,7 @@ const authorize = async function (req, res, next) {
                 //validate authorId
                 let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(authorId)
                 if (validid) {
-                    return res.status(400).send({ status: false, message: "enter valid authorId" })
+                    return res.status(400).send({ status: false, msg: "enter valid authorId" })
                 }
             }
 

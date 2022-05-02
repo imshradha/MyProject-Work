@@ -64,7 +64,7 @@ const createBlog = async function (req, res) {
       blog.save()
     }
 
-    res.status(201).send({ status: true, msg: blog });
+    res.status(201).send({ status: true, data: blog });
 
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message });
@@ -84,7 +84,7 @@ const getblog = async function (req, res) {
     }
 
     //if blog found
-    res.status(200).send({ status: true, msg: blog });
+    res.status(200).send({ status: true, data: blog });
 
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message });
@@ -109,7 +109,7 @@ const filterblog = async function (req, res) {
       //validate authorId
       let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
       if (validid) {
-        return res.send({ status: false, message: "enter valid authorId" })
+        return res.send({ status: false, msg: "enter valid authorId" })
       }
       
       const validauthor = await authorModel.findById({ _id: id }).select({ _id: 1 });
@@ -162,7 +162,7 @@ const filterblog = async function (req, res) {
     }
 
     //if blog found then respond with blog
-    res.status(200).send({ status: true, msg: blog });
+    res.status(200).send({ status: true, data: blog });
 
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message });
@@ -179,7 +179,7 @@ const updatedModel = async function (req, res) {
     //validate blogId
     let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
     if (validid) {
-      return res.send({ status: false, message: "enter valid blogId" })
+      return res.send({ status: false, msg: "enter valid blogId" })
     }
 
     //find blog with above id which are not deleted
@@ -187,7 +187,7 @@ const updatedModel = async function (req, res) {
 
     //if no blog found
     if (!blog) {
-      return res.send({ status: false, message: "blog doesnt exist" })
+      return res.send({ status: false, msg: "blog doesnt exist" })
     }
 
     //Updating title
@@ -212,11 +212,11 @@ const updatedModel = async function (req, res) {
     //save changes in blog
     blog.save()
     // respond with updated blog
-    res.status(200).send({ status: true, msg: blog })
+    res.status(200).send({ status: true, data: blog })
   }
 
   catch (err) {
-    res.status(500).send({ msg: err.message })
+    res.status(500).send({ status: false, msg: error.message })
   }
 }
 
@@ -233,12 +233,12 @@ const publisheblog = async function (req, res) {
 
     //if no blog found
     if (!blog) {
-      return res.send({ status: false, message: "blog doesnt exist" })
+      return res.send({ status: false, msg: "blog doesnt exist" })
     }
 
     //if already published
     if (blog.isPublished == true) {
-      return res.status(404).send({ status: false, message: "blog  already published" })
+      return res.status(404).send({ status: false, msg: "blog  already published" })
     }
 
     //Adding current time when blog published
@@ -246,10 +246,10 @@ const publisheblog = async function (req, res) {
     blog.isPublished = true
     //save changes
     blog.save()
-    res.status(200).send({ status: true, msg: blog })
+    res.status(200).send({ status: true, data: blog })
 
   } catch (error) {
-    res.status(500).send({ msg: error.message })
+    res.status(500).send({ status: false, msg: error.message })
   }
 
 }
@@ -266,7 +266,7 @@ const deleteblog = async function (req, res) {
     //validate blogId
     let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
     if (validid) {
-      return res.send({ status: false, message: "enter valid blogId" })
+      return res.send({ status: false, msg: "enter valid blogId" })
     }
 
     //finding blog with above id
@@ -279,7 +279,7 @@ const deleteblog = async function (req, res) {
 
     //if blog found 
     const deletedblog = await blogModel.findByIdAndUpdate({ _id: id }, { $set: { isDeleted: true, deletedAt: new Date(Date.now()) } }, { new: true })
-    return res.status(200).send({ status: true, msg: deletedblog })
+    return res.status(200).send({ status: true, data: deletedblog })
 
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message })
@@ -312,7 +312,7 @@ const deletebyquery = async function (req, res) {
     console.log(blogs)
     //blog not found
     if (blogs.length === 0) {
-      return res.status(404).send({ status: false, message: "blog does not exist" })
+      return res.status(404).send({ status: false, msg: "blog does not exist" })
     }
 
 
@@ -333,7 +333,7 @@ const deletebyquery = async function (req, res) {
       { $set: { deletedAt: date, isDeleted: true } },
       { new: true })
 
-    res.status(200).send({ status: true, msg: deleteblogs })
+    res.status(200).send({ status: true, data: deleteblogs })
 
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message })
@@ -345,7 +345,7 @@ const deletebyquery = async function (req, res) {
 
 const Endpoint = function (req, res) {
   try {
-    res.send({ status: false, message: "Enter BlogId In Path to proceed further" })
+    res.send({ status: false, msg: "Enter BlogId In Path to proceed further" })
   } catch (error) {
     res.status(500).send({ status: false, msg: error.message })
   }
