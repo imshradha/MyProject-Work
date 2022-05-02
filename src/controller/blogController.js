@@ -175,7 +175,7 @@ const updatedModel = async function (req, res) {
     //validate blogId
     let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
     if (validid) {
-      return res.send({ status: false, msg: "enter valid blogId" })
+      return res.status(400).send({ status: false, msg: "enter valid blogId" })
     }
 
     //find blog with above id which are not deleted
@@ -183,23 +183,16 @@ const updatedModel = async function (req, res) {
 
     //if no blog found
     if (!blog) {
-      return res.send({ status: false, msg: "blog doesnt exist" })
+      return res.status(404).send({ status: false, msg: "blog doesnt exist" })
     }
 
     //if already published
     if (req.body.isPublished) {
-      if (blog.isPublished == true) {
-        return res.status(404).send({ status: false, msg: "blog  already published" })
-      }
-
       //Adding current time when blog published
       blog.publishedAt = new Date(Date.now())
       blog.isPublished = req.body.isPublished
-      //save changes
-      // blog.save()
-
-    } else {
-      return res.status(404).send({ status: false, msg: "blog  already published" })
+    }else if(req.body.isPublished === false){
+      blog.isPublished = false
     }
 
     //Updating title
@@ -247,7 +240,7 @@ const deleteblog = async function (req, res) {
     //validate blogId
     let validid = !/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/.test(id)
     if (validid) {
-      return res.send({ status: false, msg: "enter valid blogId" })
+      return res.status(400).send({ status: false, msg: "enter valid blogId" })
     }
 
     //finding blog with above id
