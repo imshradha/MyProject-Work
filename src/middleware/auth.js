@@ -24,9 +24,10 @@ const authentication = async function (req, res, next) {
 
         //if token found
         let decode = jwt.verify(token, "group40-phase2");
+        
         //if token is not valid
         if (!decode) {
-            return res.status(400).send({ status: false, msg: "Invalid Token" })
+            return res.status(401).send({ status: false, msg: "Invalid Token" })
         }
 
         

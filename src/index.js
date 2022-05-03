@@ -1,6 +1,6 @@
 // express is an fast and server-side web framework for node.js
 const express = require('express')
-const mongoose = require('mongoose')
+const mongoose = require('mongoose')//ODM library for mongoDB
 const bodyParser = require('body-parser');
 
 //imported route

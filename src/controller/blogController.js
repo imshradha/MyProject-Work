@@ -139,11 +139,11 @@ const getblog = async function (req, res) {
       const { authorId, category, tags, subcategory } = query;
       console.log(query)
       //filter blog and populate author
-      const blog = await blogModel.find(query).populate('authorId');
+      const blog = await blogModel.find({ $and: [{ isDeleted: false }, query] }).populate('authorId');
 
       //if no blog found
       if (blog.length === 0) {
-        return res.status(404).send({ status: false, msg: "NOT found" });
+        return res.status(404).send({ status: false, msg: `No such blog with these filter` });
       }
 
       //if blog found then respond with blog
@@ -191,38 +191,41 @@ const updatedModel = async function (req, res) {
     //if already published
     if (req.body.isPublished) {
       //Adding current time when blog published
-      blog.publishedAt = new Date(Date.now())
-      blog.isPublished = req.body.isPublished
+      await blogModel.findByIdAndUpdate({ _id: id }, {publishedAt: new Date(Date.now()) , isPublished: req.body.isPublished },{new:true} )
+
+      // blog.publishedAt = new Date(Date.now())
+      // blog.isPublished = req.body.isPublished
     } else if (req.body.isPublished === false) {
-      blog.isPublished = false
+      await blogModel.findByIdAndUpdate({ _id: id },{ isPublished: req.body.isPublished },{new:true} )
     }
 
     //Updating title
     if (req.body.title) {
-      blog.title = req.body.title
+      await blogModel.findByIdAndUpdate({ _id: id },{ title: req.body.title },{new:true} )
     }
 
     //updating body
     if (req.body.body) {
-      blog.body = req.body.body
+      await blogModel.findByIdAndUpdate({ _id: id },{ body: req.body.body },{new:true} )
     }
 
     //assing a tags in a body to tags in a blog
     if (req.body.tags) {
-      blog.tags.push(...req.body.tags)
+      await blogModel.findByIdAndUpdate({ _id: id }, { $addToSet: { tags: req.body.tags } },{new:true})
     }
+
     //assing a subcategory in a body to subcategory in a blog
     if (req.body.subcategory) {
-      blog.subcategory.push(...req.body.subcategory)
+      await blogModel.findByIdAndUpdate({ _id: id }, { $addToSet: { subcategory: req.body.subcategory } },{new:true})
     }
 
     //save changes in blog
-    blog.save()
+    // blog.save()
     // respond with updated blog
     res.status(200).send({ status: true, data: blog })
   }
 
-  catch (err) {
+  catch (error) {
     res.status(500).send({ status: false, msg: error.message })
   }
 }

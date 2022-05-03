@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 //author API's
 //create author api
-router.post("/author", authorcontroller.createAuthor)
+router.post("/authors", authorcontroller.createAuthor)
 //login author api
 router.post("/login", authorcontroller.loginauthor)
 
