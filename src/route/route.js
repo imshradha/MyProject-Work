@@ -26,8 +26,6 @@ router.post("/blog", auth.authentication, blogController.createBlog)
 //get blog api with middleware
 router.get("/getblog", auth.authentication, blogController.getblog)
 
-
-
 //update blog api with middleware
 router.put("/updateblog/:blogId", auth.authentication, auth.authorize, blogController.updatedModel)
 router.put("/updateblog",  blogController.Endpoint)
